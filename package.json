@@ -1,0 +1,14 @@
+{
+  "name": "scrap-your-markup",
+  "version": "0.0.1",
+  "description": "A free monad for describing UIs",
+  "main": "index.js",
+  "dependencies": {
+    "grunt": "~0.4.4",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-execute": "~0.1.5",
+    "grunt-purescript": "~0.5.0"
+  },
+  "author": "Phil Freeman",
+  "license": "MIT"
+}

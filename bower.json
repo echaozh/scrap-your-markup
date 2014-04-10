@@ -1,0 +1,24 @@
+{
+  "name": "scrap-your-markup",
+  "version": "0.0.1",
+  "homepage": "https://github.com/paf31/spawncamping-octo-ninja",
+  "authors": [
+    "Phil Freeman <paf31@cantab.net>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "purescript-free": "*",
+    "purescript-arrays": "*",
+    "purescript-jquery": "*",
+    "purescript-reactive": "*",
+    "purescript-reactive-jquery": "*",
+    "purescript-transformers": "*"
+  }
+}
