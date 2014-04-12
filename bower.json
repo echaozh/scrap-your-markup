@@ -13,7 +13,7 @@
     "test",
     "tests"
   ],
-  keywords: ["purescript"],
+  "keywords": ["purescript"],
   "dependencies": {
     "purescript-free": "*",
     "purescript-arrays": "*",
