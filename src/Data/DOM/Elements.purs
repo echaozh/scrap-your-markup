@@ -2,17 +2,17 @@ module Data.DOM.Elements where
 
 import Data.DOM
 
-div :: [Attribute] -> Html {} -> Html {}
+div :: forall a. [Attribute] -> Html a -> Html a
 div = element "div"
 
-ul :: [Attribute] -> Html {} -> Html {}
+ul :: forall a. [Attribute] -> Html a -> Html a
 ul = element "ul"
 
-li :: [Attribute] -> Html {} -> Html {}
+li :: forall a. [Attribute] -> Html a -> Html a
 li = element "li"
 
-p :: [Attribute] -> Html {} -> Html {}
+p :: forall a. [Attribute] -> Html a -> Html a
 p = element "p"
 
-button :: [Attribute] -> Html {} -> Html {}
+button :: forall a. [Attribute] -> Html a -> Html a
 button = element "button"
