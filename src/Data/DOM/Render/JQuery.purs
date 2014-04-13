@@ -28,9 +28,20 @@ renderJQuery root = iterM go
   go (Text s rest) = do
     JQuery.appendText s root
     rest
+  go (Label c attrs rest) = do
+    el <- createElement "span" attrs
+    sub <- RJ.bindTextOneWay c el
+    JQuery.append el root
+    rest sub
   go (TextBox var attrs rest) = do
     el <- createElement "input" attrs
     sub <- RJ.bindValueTwoWay var el
     JQuery.append el root
     rest sub
+  go (CheckBox var attrs rest) = do
+    el <- createElement "input" (Attribute "type" "checkbox" : attrs)
+    sub <- RJ.bindCheckedTwoWay var el
+    JQuery.append el root
+    rest sub
+    
     

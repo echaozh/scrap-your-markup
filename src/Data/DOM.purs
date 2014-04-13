@@ -27,12 +27,16 @@ instance functorElementData :: Functor ElementData where
 data HtmlF a
   = Element (ElementData a)
   | Text String a
+  | Label (Computed String) [Attribute] (Subscription -> a)
   | TextBox (RVar String) [Attribute] (Subscription -> a)
+  | CheckBox (RVar Boolean) [Attribute] (Subscription -> a)
 
 instance functorHtmlF :: Functor HtmlF where
   (<$>) f (Element ed) = Element (f <$> ed) 
   (<$>) f (Text s a) = Text s (f a)
+  (<$>) f (Label c attrs k) = Label c attrs (f <<< k)
   (<$>) f (TextBox var attrs k) = TextBox var attrs (f <<< k)
+  (<$>) f (CheckBox var attrs k) = CheckBox var attrs (f <<< k)
 
 type Html = Free HtmlF
 
@@ -42,6 +46,13 @@ element elem attrs children = liftF $ Element $ mkElementData elem attrs childre
 text :: String -> Html {}
 text s = liftF $ Text s {}
 
+label :: Computed String -> [Attribute] -> Html Subscription
+label c attrs = liftF $ Label c attrs (\s -> s)
+
 textBox :: RVar String -> [Attribute] -> Html Subscription
 textBox var attrs = liftF $ TextBox var attrs (\s -> s)
+
+checkBox :: RVar Boolean -> [Attribute] -> Html Subscription
+checkBox var attrs = liftF $ CheckBox var attrs (\s -> s)
+
 
