@@ -43,5 +43,20 @@ renderJQuery root = iterM go
     sub <- RJ.bindCheckedTwoWay var el
     JQuery.append el root
     rest sub
-    
+  go (Button text attrs action rest) = do
+    el <- createElement "button" attrs
+    flip (JQuery.on "click") el $ \_ -> action
+    JQuery.appendText text el
+    JQuery.append el root
+    rest Data.Monoid.mempty
+  go (ForEach fed) = runForEachData fed (\arr attrs body k -> do
+    el <- createElement "div" attrs
+    sub <- RJ.bindArray arr el $ \item index -> do
+      itemEl <- createElement "div" []
+      s <- renderJQuery itemEl (body item index)
+      return { el: itemEl, subscription: s }
+    JQuery.append el root
+    k sub
+    )    
+
     

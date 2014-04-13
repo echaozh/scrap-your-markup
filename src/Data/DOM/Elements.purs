@@ -14,5 +14,3 @@ li = element "li"
 p :: forall a. [Attribute] -> Html a -> Html a
 p = element "p"
 
-button :: forall a. [Attribute] -> Html a -> Html a
-button = element "button"
