@@ -48,6 +48,32 @@ instance functorForEachData :: Functor ForEachData where
   (<$>) f fed = runForEachData fed (\arr attrs body k -> mkForEachData arr attrs body (f <<< k))
 
 --
+-- WhenData a. (RVar Boolean, Html Subscription, Html Subscription, Subscription -> a)
+--
+
+data WhenData a = MkWhenData (forall r. (RVar Boolean ->
+                                         Html Subscription ->
+                                         Html Subscription ->
+                                         (Subscription -> a) -> r) -> r)
+
+mkWhenData :: forall a. RVar Boolean ->
+                        Html Subscription ->
+                        Html Subscription ->
+                        (Subscription -> a) ->
+                        WhenData a
+mkWhenData pred onTrue onFalse a = MkWhenData (\f -> f pred onTrue onFalse a)
+
+runWhenData :: forall a r. WhenData a ->
+                           (RVar Boolean ->
+                            Html Subscription ->
+                            Html Subscription ->
+                            (Subscription -> a) -> r) -> r
+runWhenData (MkWhenData f) k = f k
+
+instance functorWhenData :: Functor WhenData where
+  (<$>) f fed = runWhenData fed (\pred onTrue onFalse k -> mkWhenData pred onTrue onFalse (f <<< k))
+
+--
 -- The type of actions, for button clicks etc.
 --
 
@@ -65,6 +91,7 @@ data HtmlF a
   | CheckBox (RVar Boolean) [Attribute] (Subscription -> a)
   | Button String [Attribute] Action (Subscription -> a)
   | ForEach (ForEachData a)
+  | When (WhenData a)
 
 instance functorHtmlF :: Functor HtmlF where
   (<$>) f (Element ed) = Element (f <$> ed) 
@@ -94,6 +121,9 @@ checkBox var attrs = liftF $ CheckBox var attrs (\s -> s)
 
 forEach :: forall item. RArray item -> [Attribute] -> (item -> RVar Number -> Html Subscription) -> Html Subscription 
 forEach arr attrs body = liftF $ ForEach $ mkForEachData arr attrs body (\s -> s)
+
+when :: RVar Boolean -> Html Subscription -> Html Subscription -> Html Subscription
+when pred onTrue onFalse = liftF $ When $ mkWhenData pred onTrue onFalse (\s -> s)
 
 button :: String -> [Attribute] -> Action -> Html Subscription
 button text attrs action = liftF $ Button text attrs action (\s -> s)

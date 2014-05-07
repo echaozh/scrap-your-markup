@@ -4,6 +4,7 @@ import Data.DOM
 
 import Data.Foldable (for_)
 
+import Control.Apply
 import Control.Monad.Free
 import Control.Monad.Eff
 import qualified Control.Monad.JQuery as JQuery
@@ -57,6 +58,10 @@ renderJQuery root = iterM go
       return { el: itemEl, subscription: s }
     JQuery.append el root
     k sub
-    )    
-
-    
+    )
+  go (When fed) = runWhenData fed (\pred onTrue onFalse k -> do
+    sub <- R.subscribeComputed (R.toComputed pred) $ \b ->
+      if b
+      then renderJQuery root onTrue *> return {}
+      else renderJQuery root onFalse *> return {}
+    k sub)
