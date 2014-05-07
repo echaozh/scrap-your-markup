@@ -25,38 +25,38 @@ instance functorElementData :: Functor ElementData where
 -- ForEachData a ~ exists item. (RArray item, [Attribute], item -> RVar Number -> Html Subscription, Subscription -> a)
 --
 
-data ForEachData a = MkForEachData (forall r. (forall item. RArray item -> 
-                                                            [Attribute] -> 
-                                                            (item -> RVar Number -> Html Subscription) -> 
+data ForEachData a = MkForEachData (forall r. (forall item. RArray item ->
+                                                            [Attribute] ->
+                                                            (item -> RVar Number -> Html Subscription) ->
                                                             (Subscription -> a) -> r) -> r)
 
-mkForEachData :: forall item a. RArray item -> 
-                                [Attribute] -> 
-                                (item -> RVar Number -> Html Subscription) -> 
-                                (Subscription -> a) -> 
+mkForEachData :: forall item a. RArray item ->
+                                [Attribute] ->
+                                (item -> RVar Number -> Html Subscription) ->
+                                (Subscription -> a) ->
                                 ForEachData a
 mkForEachData arr attrs body a = MkForEachData (\f -> f arr attrs body a)
 
-runForEachData :: forall a r. ForEachData a -> 
+runForEachData :: forall a r. ForEachData a ->
                               (forall item. RArray item ->
-                                            [Attribute] ->                            
-                                            (item -> RVar Number -> Html Subscription) ->                            
-                                            (Subscription -> a) -> r) -> r                            
+                                            [Attribute] ->
+                                            (item -> RVar Number -> Html Subscription) ->
+                                            (Subscription -> a) -> r) -> r
 runForEachData (MkForEachData f) k = f k
 
 instance functorForEachData :: Functor ForEachData where
   (<$>) f fed = runForEachData fed (\arr attrs body k -> mkForEachData arr attrs body (f <<< k))
 
 --
--- WhenData a. (RVar Boolean, Html Subscription, Html Subscription, Subscription -> a)
+-- WhenData a. (Computed Boolean, Html Subscription, Html Subscription, Subscription -> a)
 --
 
-data WhenData a = MkWhenData (forall r. (RVar Boolean ->
+data WhenData a = MkWhenData (forall r. (Computed Boolean ->
                                          Html Subscription ->
                                          Html Subscription ->
                                          (Subscription -> a) -> r) -> r)
 
-mkWhenData :: forall a. RVar Boolean ->
+mkWhenData :: forall a. Computed Boolean ->
                         Html Subscription ->
                         Html Subscription ->
                         (Subscription -> a) ->
@@ -64,7 +64,7 @@ mkWhenData :: forall a. RVar Boolean ->
 mkWhenData pred onTrue onFalse a = MkWhenData (\f -> f pred onTrue onFalse a)
 
 runWhenData :: forall a r. WhenData a ->
-                           (RVar Boolean ->
+                           (Computed Boolean ->
                             Html Subscription ->
                             Html Subscription ->
                             (Subscription -> a) -> r) -> r
@@ -94,13 +94,14 @@ data HtmlF a
   | When (WhenData a)
 
 instance functorHtmlF :: Functor HtmlF where
-  (<$>) f (Element ed) = Element (f <$> ed) 
+  (<$>) f (Element ed) = Element (f <$> ed)
   (<$>) f (Text s a) = Text s (f a)
   (<$>) f (Label c attrs k) = Label c attrs (f <<< k)
   (<$>) f (TextBox var attrs k) = TextBox var attrs (f <<< k)
   (<$>) f (CheckBox var attrs k) = CheckBox var attrs (f <<< k)
   (<$>) f (Button text attrs action k) = Button text attrs action (f <<< k)
   (<$>) f (ForEach fed) = ForEach (f <$> fed)
+  (<$>) f (When wd) = When (f <$> wd)
 
 type Html = Free HtmlF
 
@@ -119,12 +120,11 @@ textBox var attrs = liftF $ TextBox var attrs (\s -> s)
 checkBox :: RVar Boolean -> [Attribute] -> Html Subscription
 checkBox var attrs = liftF $ CheckBox var attrs (\s -> s)
 
-forEach :: forall item. RArray item -> [Attribute] -> (item -> RVar Number -> Html Subscription) -> Html Subscription 
+forEach :: forall item. RArray item -> [Attribute] -> (item -> RVar Number -> Html Subscription) -> Html Subscription
 forEach arr attrs body = liftF $ ForEach $ mkForEachData arr attrs body (\s -> s)
 
-when :: RVar Boolean -> Html Subscription -> Html Subscription -> Html Subscription
+when :: Computed Boolean -> Html Subscription -> Html Subscription -> Html Subscription
 when pred onTrue onFalse = liftF $ When $ mkWhenData pred onTrue onFalse (\s -> s)
 
 button :: String -> [Attribute] -> Action -> Html Subscription
 button text attrs action = liftF $ Button text attrs action (\s -> s)
-
