@@ -7,6 +7,7 @@ import Data.Foldable (for_)
 import Control.Apply
 import Control.Monad.Free
 import Control.Monad.Eff
+import Control.Monad.Eff.Unsafe (unsafeInterleaveEff)
 import qualified Control.Monad.JQuery as JQuery
 import qualified Control.Reactive as R
 import qualified Control.Reactive.JQuery as RJ
@@ -60,8 +61,6 @@ renderJQuery root = iterM go
     k sub
     )
   go (When fed) = runWhenData fed (\pred onTrue onFalse k -> do
-    sub <- R.subscribeComputed (R.toComputed pred) $ \b ->
-      if b
-      then renderJQuery root onTrue *> return {}
-      else renderJQuery root onFalse *> return {}
+    b <- R.readRVar pred
+    sub <- renderJQuery root $ if b then onTrue else onFalse
     k sub)
