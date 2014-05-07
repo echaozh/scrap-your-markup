@@ -62,5 +62,7 @@ renderJQuery root = iterM go
     )
   go (When fed) = runWhenData fed (\pred onTrue onFalse k -> do
     b <- R.readRVar pred
-    sub <- renderJQuery root $ if b then onTrue else onFalse
+    el <- createElement "div" []
+    sub <- renderJQuery el $ if b then onTrue else onFalse
+    JQuery.append el root
     k sub)
